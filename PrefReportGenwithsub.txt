@@ -1,0 +1,419 @@
+<?php
+ include 'Sub_DB_Connect.php';
+ include 'Ind_DateTime.php';
+ include 'StyleSheet.css';
+?>
+
+<html>
+<head>
+<script>
+
+function myfn_ck(){
+  var checkboxes = document.getElementsByName('stfid');
+  var checkboxesChecked = [];
+  // loop over them all
+  for (var i=0; i<checkboxes.length; i++) {
+     // And stick the checked ones onto an array...
+     if (checkboxes[i].checked) {
+        checkboxesChecked.push(checkboxes[i].value);
+     }
+  }
+  document.getElementById("st_show").value = checkboxesChecked;
+}
+
+ function resetForm(myFormId)
+   {
+       var myForm = document.getElementById(myFormId);
+       var span = document.getElementById("myspan");
+       span.parentNode.removeChild(span);  
+       document.getElementById("st_show").value="";
+}
+
+function myfn_unck(){
+   var checkboxes = document.getElementsByName('stfid');
+  var checkboxesChecked = [];
+ document.getElementById("st_show").value="";
+myfn_ck();
+}
+
+function myfn_ck1(){
+  var checkboxes = document.getElementsByName('preopt1');
+  var checkboxesChecked = [];
+  // loop over them all
+  for (var i=0; i<checkboxes.length; i++) {
+     // And stick the checked ones onto an array...
+     if (checkboxes[i].checked) {
+               checkboxesChecked.push(checkboxes[i].value);
+     }
+  }
+  document.getElementById("st_show").value = checkboxesChecked;
+}
+
+
+function myfn_unck1(){
+   var checkboxes = document.getElementsByName('preopt1');
+  var checkboxesChecked = [];
+ document.getElementById("st_show").value="";
+myfn_ck1();
+}
+
+
+function ReportGen()
+ {
+    opt = document.getElementById("repOpt");
+    optval = opt.value;
+    document.getElementById("st_show").value = "";
+  //StaffId
+    element1 = document.getElementById("staffidDiv");
+    stf_id = document.getElementsByName("stfid");
+    sub_id = document.getElementsByName("preopt1");
+    element1.setAttribute("hidden", "hidden");
+
+    if (optval == "Preference List")
+   {
+    window.open('/LoginTest/PrefReportDisUni.php', '_blank');
+    //window.location.href = "/LoginTest/PrefReportDisUni.php";
+    }
+     else if (optval == "Preference List - Include Duplicates")
+      {
+    window.open('/LoginTest/PrefReportDisDup.php', '_blank');
+    //window.location.href = "/LoginTest/PrefReportDisDup.php";
+    }
+     else if(optval == "StaffId-Wise" || optval == "StaffId-Wise - Include Duplicates" )
+    {
+      for(var i = 0; i < stf_id.length; i++)
+           stf_id[i].checked = false;
+       element1.removeAttribute("hidden");
+    }
+     else if(optval == "SubjectOpt")
+    {
+      for(var i = 0; i < sub_id.length; i++)
+           sub_id[i].checked = false;
+       element1.removeAttribute("hidden");
+    }
+}
+
+        function preventBack() {
+            window.history.forward(); 
+        }
+        setTimeout("preventBack()", 0);
+        window.onunload = function () { null };
+
+</script>
+
+</head>
+
+<body>
+
+<div id="logo" class="logo">
+       <?php require('logo.php');?>
+</div>
+
+
+<form id="RepGen" method="post" action="">
+<div class=navbar>
+<select class=repOpt name=repOpt  id=repOpt  onchange="ReportGen()">
+<option selected disabled>Report Generation</option>
+
+<optgroup label="Subject Opted">
+<option class=dropdown-content1 value="SubjectOpt">SubjectOpt</option>
+</optgroup>
+
+<optgroup label="Finalized">    
+<option class=dropdown-content1 value="Preference List">Preference List</option>
+<option class=dropdown-content1 value="StaffId-Wise">StaffId-Wise</option>
+</optgroup>
+
+<optgroup label="Including Duplication">
+<option class=dropdown-content1 value="Preference List - Include Duplicates">Preference List - Include Duplicates</option>
+<option class=dropdown-content1 value="StaffId-Wise - Include Duplicates">StaffId-Wise - Include Duplicates</option>
+</optgroup>
+
+</select>
+
+<a href = "main_logout.php">LOGOUT</a>
+<a href = "Chngpwd.php">CHANGE PASSWORD</a>
+<a href = "yettosubmit.php" target=_blank>YET_TO_SUBMIT</a>
+
+</div>
+
+
+<div class=staffidDiv id=staffidDiv hidden=hidden>
+<?php
+
+  //Division to Display All Staff_IDs
+   $sqlSelect_st = "Select col_number as Sno, col_uname as Sname,
+                        convert(SUBSTRING(col_number, 2),decimal) AS `first_part` from tbl_login
+                         ORDER BY `first_part` ASC";
+
+$record_set = $db->query($sqlSelect_st);
+
+while( $row = $record_set->fetch_assoc() ) {
+//Get fields for a row.
+$sn= $row['Sno'];
+$sname= $row['Sname'];
+if ($sn != "Admin")
+{
+?>                  
+   <label>
+      <input type="checkbox" name="stfid" id="stfid" 
+               onclick = "if(this.checked)
+                                  {myfn_ck();}
+                             else
+                                  {myfn_unck();}" 
+                  value="<?=$sn;?>"><?=$sn. " - " . $sname;?>
+   </label><br>
+
+<?php
+}}
+?>
+
+</div>
+
+<div class=subDiv id=subDiv hidden=hidden>
+<?php
+
+  $sqlSelect1 = "SELECT CrCode,CrName,convert(SUBSTRING(CrCode, 4),decimal) AS `cr1` FROM sheet1 where CrCode like 'CSS1%'  or CrCode like 'CSS 1%' or CrCode like 'CSS2%' or  CrCode like 'CSS 2%' or CrCode like 'CSS3%' or CrCode like 'CSS 3%'order by Cr1 asc";
+
+    $sqlSelect2 = "SELECT CrCode,CrName,convert(SUBSTRING(CrCode, 4),decimal) AS `cr1` FROM sheet1 where CrCode like 'CSS4%'  or CrCode like 'CSS 4%' or CrCode like 'CSS5%' or  CrCode like 'CSS 5%' order by Cr1 asc";
+
+    $sqlSelect3 = "SELECT CrCode,CrName,convert(SUBSTRING(CrCode, 4),decimal) AS `cr1` FROM sheet1 where CrCode like 'CAP%' order by Cr1 asc";
+
+ $sqlSelect4 = "SELECT CrCode,CrName,convert(SUBSTRING(CrCode, 4),decimal) AS `cr1` FROM sheet1 where CrCode like 'CSE%' order by Cr1 asc";
+
+     $sqlSelect5 = "SELECT CrCode,CrName,convert(SUBSTRING(CrCode, 4),decimal) AS `cr1` FROM sheet1 where CrCode not like 'CSE%' and CrCode not like 'CAP%' and CrCode not like 'CSS1%'  and CrCode not like 'CSS 1%'  and CrCode not like 'CSS2%' and CrCode not like 'CSS 2%'  and CrCode not like 'CSS3%' and CrCode not like 'CSS 3%' and CrCode not like 'CSS4%' and CrCode not like 'CSS 4%' and CrCode not like 'CSS5%' and CrCode not like 'CSS 5%' order by Cr1 asc"; 
+    
+
+   $result1 = $db->query($sqlSelect1);
+   $result2 = $db->query($sqlSelect2);
+   $result3 = $db->query($sqlSelect3);
+   $result4 = $db->query($sqlSelect4);
+   $result5 = $db->query($sqlSelect5);
+   
+
+    if (! empty($result1) || !empty($result2) || !empty($result3) || !empty($result4) || !empty($result5)) 
+	{
+               $Todis1 = "";
+               $Todis2 = "";
+	 $Todis3 = "";
+	 $Todis4 = "";
+               $Todis5 = "";
+
+                foreach ($result1 as $row) {
+                 $dis1 = $row["CrCode"];
+	   $dis2 = $row["CrName"];
+                 $Todis1 = $dis1 . "   ---   " . $dis2; 
+                
+ ?>                  
+
+<label><input type="checkbox" name="preopt1"  id="preopt1" 
+               onclick = "if(this.checked)
+                                  {myfn_ck1();}
+                             else
+                                  {myfn_unck1();}"
+               value="<?=$Todis1;?>">&nbsp<?=$Todis1;?>
+</label><br>
+
+<?php
+}
+
+                foreach ($result2 as $row) {
+                 $dis1 = $row["CrCode"];
+	   $dis2 = $row["CrName"];
+                 $Todis2 = $dis1 . "   ---   " . $dis2; 
+                
+ ?>                  
+
+<label><input type="checkbox" name="preopt2"  id="preopt2" 
+               onclick = "if(this.checked)
+                                  {myfn_ck1();}
+                             else
+                                  {myfn_unck1();}"
+               value="<?=$Todis2;?>">&nbsp<?=$Todis2;?>
+</label><br>
+<?php
+    }
+
+                foreach ($result3 as $row) {
+                 $dis1 = $row["CrCode"];
+	   $dis2 = $row["CrName"];
+                 $Todis3 = $dis1 . "   ---   " . $dis2; 
+?>                  
+
+<label><input type="checkbox" name="preopt3"  id="preopt3" 
+               onclick = "if(this.checked)
+                                  {myfn_ck1();}
+                             else
+                                  {myfn_unck1();}"
+               value="<?=$Todis3;?>">&nbsp<?=$Todis3;?>
+</label><br>
+
+<?php
+    }
+                foreach ($result4 as $row) {
+                 $dis1 = $row["CrCode"];
+	   $dis2 = $row["CrName"];
+                 $Todis4 = $dis1 . "   ---   " . $dis2; 
+                
+ ?>                  
+
+<label><input type="checkbox" name="preopt4"  id="preopt4" 
+               onclick = "if(this.checked)
+                                  {myfn_ck1();}
+                             else
+                                  {myfn_unck1();}"
+               value="<?=$Todis4;?>">&nbsp<?=$Todis4;?>
+</label><br>
+
+<?php
+    }
+                foreach ($result5 as $row) {
+                 $dis1 = $row["CrCode"];
+	   $dis2 = $row["CrName"];
+                 $Todis5 = $dis1 . "   ---   " . $dis2; 
+                
+ ?>                  
+
+<label><input type="checkbox" name="preopt5"  id="preopt5" 
+               onclick = "if(this.checked)
+                                  {myfn_ck1();}
+                             else
+                                  {myfn_unck1();}"
+               value="<?=$Todis5;?>">&nbsp<?=$Todis5;?>
+</label><br>
+
+<?php
+    }
+
+?>
+</div><br>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div style="position: absolute; 
+            left: 300px; 
+            top: 330px; 
+             name="mydiv" id="mydiv">
+Enter / (From DropDown)Select Staff ID&nbsp&nbsp&nbsp
+<input type="text" id="st_show" name="st_show" value="">
+<input type=submit name=submit value=Search>
+<input type=reset name=reset value=Clear  onclick="resetForm('RepGen'); return false;">
+<br>[Use Comma inbetween Multiple Staff IDs'] 
+<br>
+
+<span id=myspan>
+<?php
+ if (isset($_POST['submit'])) {
+$input = $_POST['st_show'];
+if(isset($_POST['repOpt']))
+       {$opt =$_POST['repOpt']; // echo $opt;
+        } 
+
+//$arrayString = print_r($input, true);
+//echo str_replace("\n", "", $input);
+
+$separator = ",";
+$output = explode($separator, $input);
+
+
+foreach ($output as $x)
+{
+
+if (isset($_POST['repOpt']) && $opt == 'StaffId-Wise' || !(isset($_POST['repOpt'])) )
+{
+ $sqlSelect = "SELECT  P1.Sno,
+                  x1.col_uname,P1.Pre1,P1.Pre2,P1.Pre3,P1.Pre4,P1.Pre5,
+               DATE_FORMAT(TimeStamp,'%d-%m-%Y %H:%i:%s') as 'TimeStamp1'
+               FROM pref P1, tbl_login x1
+                                    where  Sno= '" . $x . "' and
+                                              TimeStamp =
+                                   (SELECT Max(TimeStamp) from  pref P2 where P1.SNo=P2.Sno) 
+                                  and P1.Sno=x1.col_number";
+}
+else if(isset($_POST['repOpt']) && $opt == 'StaffId-Wise - Include Duplicates')
+{     
+ $sqlSelect = "SELECT P1.Sno,
+                  x1.col_uname,P1.Pre1,P1.Pre2,P1.Pre3,P1.Pre4,P1.Pre5,
+        DATE_FORMAT(TimeStamp,'%d-%m-%Y %H:%i:%s')as 'TimeStamp1'       
+       FROM pref P1, tbl_login x1
+                       where Sno= '" . $x . "'   and P1.Sno=x1.col_number 
+                               ORDER BY TimeStamp Desc";
+}
+
+
+$record_set = $db->query($sqlSelect);     
+
+$i = 0;
+while( $row = $record_set->fetch_assoc() ) {
+$i =$i + 1;
+$sn = $row['Sno'];
+$unn=$row['col_uname'];
+$op1 = $row['Pre1'];
+$op2 = $row['Pre2'];
+$op3 = $row['Pre3'];
+$op4 = $row['Pre4'];
+$op5 = $row['Pre5'];
+$dt = $row['TimeStamp1'];   
+
+//Get fields for a row.
+
+if($i == 1)
+{
+   echo '<br><u><font color=green>'. $x . ' - '.$unn .'</u></font><br><br>';
+}
+
+echo '<TABLE border=2>';
+//echo '<tr> <th>Staff ID</th>';
+echo '<th>Option 1</th>';
+echo '<th>Option 2</th>';
+echo '<th>Option 3</th>';
+echo '<th>Option 4</th>';
+echo '<th>Option 5</th>';
+echo '<th>TimeStamp</th>';
+
+echo '<tr>';
+//print '<td>' . $sn . '</td>';
+print '<td>' . $op1. '</td>';
+print '<td>' . $op2. '</td>';
+print '<td>' .$op3. '</td>';
+print '<td>' .$op4. '</td>';
+print '<td>' .$op5. '</td>';
+print '<td>' .$dt. '</td>';
+echo '</tr>';
+
+echo '</TABLE>';
+echo '<br><br>';
+
+}  
+
+echo '<br><br>';
+}
+
+}
+
+?>
+
+
+</span>
+</div>
+</form>
+
+</body>
+
+</html>

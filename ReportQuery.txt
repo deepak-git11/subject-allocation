@@ -1,0 +1,51 @@
+1.Trials:
+
+
+/*........
+
+
+SELECT  Sno,x2.col_uname,Pre1,Pre2,Pre3,Pre4,Pre5,TimeStamp  FROM 
+                                 (SELECT Sno,convert(SUBSTRING(Sno, 2),decimal) AS `first_part`, Pre1,Pre2,Pre3,Pre4,Pre5, 
+                                  DATE_FORMAT(TimeStamp,'%d-%m-%Y %H:%i:%s') as TimeStamp  FROM pref 
+                                    order by `first_part` ASC) outer1,  tbl_login x2
+                    WHERE TimeStamp =
+                                   (SELECT Min(TimeStamp)
+                                             FROM  (SELECT Sno,convert(SUBSTRING(Sno, 2),decimal) AS `first_part`, Pre1,Pre2,Pre3,Pre4,Pre5, 
+                                  DATE_FORMAT(TimeStamp,'%d-%m-%Y %H:%i:%s') as TimeStamp  FROM pref 
+                                    order by `first_part` ASC) outer2
+                                      WHERE outer2.Sno =outer1.Sno group by Sno) and Sno=x2.col_number
+
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+
+SELECT  Sno,Pre1,Pre2,Pre3,Pre4,Pre5,TimeStamp  FROM 
+                                 (SELECT Sno,convert(SUBSTRING(Sno, 2),decimal) AS `first_part`, Pre1,Pre2,Pre3,Pre4,Pre5, 
+                                  DATE_FORMAT(TimeStamp,'%d-%m-%Y %H:%i:%s') as TimeStamp  FROM pref 
+                                    order by `first_part` ASC) outer1
+                    WHERE TimeStamp =
+                                   (SELECT Max(TimeStamp)
+                                             FROM  (SELECT Sno,convert(SUBSTRING(Sno, 2),decimal) AS `first_part`, Pre1,Pre2,Pre3,Pre4,Pre5, 
+                                  DATE_FORMAT(TimeStamp,'%d-%m-%Y %H:%i:%s') as TimeStamp  FROM pref 
+                                    order by `first_part` ASC) outer2
+                                      WHERE outer2.Sno =outer1.Sno group by Sno)
+
+
+~~~~~~~~~~~~~~~~~~~~~~~
+
+SELECT  P1.Sno,x1.col_uname,P1.Pre1,P1.Pre2,P1.Pre3,P1.Pre4,P1.Pre5,P1.TimeStamp  FROM pref P1, tbl_login x1
+                                    where TimeStamp =
+                                   (SELECT Max(TimeStamp) from  pref P2 where P1.SNo=P2.Sno) 
+                                   and P1.Sno=x1.col_number order by Sno
+
+
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Duplicate
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+SELECT Sno,convert(SUBSTRING(Sno, 2),decimal) AS `first_part`,
+       Pre1,Pre2,Pre3,Pre4,Pre5, 
+       DATE_FORMAT(TimeStamp,'%d-%m-%Y %H:%i:%s')as TimeStamp  FROM pref  ORDER BY `first_part` ASC, TimeStamp Desc
